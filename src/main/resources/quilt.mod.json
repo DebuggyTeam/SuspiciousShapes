@@ -1,0 +1,36 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "gay.debuggy",
+		"id": "suspicious_shapes",
+		"version": "${version}",
+		"metadata": {
+			"name": "Suspicious Shapes",
+			"description": "glTF block models",
+			"contributors": {
+				"Your name here": "Falkreon"
+			},
+			"contact": {
+				"homepage": "https://github.com/DebuggyTeam/SuspiciousShapes",
+				"issues": "https://github.com/DebuggyTeam/SuspiciousShapes/issues",
+				"sources": "https://github.com/DebuggyTeam/SuspiciousShapes"
+			},
+			"icon": "assets/suspicious_shapes/icon.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+			"init": "gay.debuggy.shapes.SuspiciousShapes"
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=0.19.+"
+			},
+			{
+				"id": "minecraft",
+				"versions": ">=1.20-"
+			}
+		]
+	},
+	"mixin": "suspicious_shapes.mixins.json"
+}

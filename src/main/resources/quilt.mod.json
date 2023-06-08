@@ -19,7 +19,8 @@
 		},
 		"intermediate_mappings": "net.fabricmc:intermediary",
 		"entrypoints": {
-			"init": "gay.debuggy.shapes.SuspiciousShapes"
+			"init": "gay.debuggy.shapes.SuspiciousShapesMod",
+			"client_init": "gay.debuggy.shapes.client.SuspiciousShapesClient"
 		},
 		"depends": [
 			{

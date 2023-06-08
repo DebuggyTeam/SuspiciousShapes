@@ -21,6 +21,7 @@ dependencies {
 
 	modImplementation "org.quiltmc:quilt-loader:${project.loader}"
 	modImplementation "org.quiltmc:qsl:${project.qsl}+${project.minecraft}"
+	modImplementation "org.quiltmc.quilted-fabric-api:quilted-fabric-api:${project.qfapi}"
 	// No QFAPI this version
 }
 

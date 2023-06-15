@@ -126,6 +126,6 @@ public class Mesh {
 		}
 	}
 	
-	public class Vertex extends AbstractShaderAttributeHolder {
+	public static class Vertex extends AbstractShaderAttributeHolder {
 	}
 }

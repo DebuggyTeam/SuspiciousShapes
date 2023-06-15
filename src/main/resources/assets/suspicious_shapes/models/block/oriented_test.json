@@ -1,0 +1,7 @@
+{
+    "parent": "suspicious_shapes:block/oriented_test.gltf",
+    "textures": {
+        "top": "suspicious_shapes:block/uv_arrow",
+        "side": "suspicious_shapes:block/uv"
+    }
+}

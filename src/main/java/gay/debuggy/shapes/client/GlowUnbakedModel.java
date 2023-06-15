@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import com.google.common.collect.ImmutableList;
 
@@ -33,7 +35,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.InvalidIdentifierException;
+import net.minecraft.util.math.AffineTransformation;
 
 public class GlowUnbakedModel implements UnbakedModel {
 	private static final Identifier DEFAULT_BLOCK_MODEL = new Identifier("minecraft:block/block");
@@ -89,16 +91,25 @@ public class GlowUnbakedModel implements UnbakedModel {
 		MeshBuilder meshBuilder = renderer.meshBuilder();
 		QuadEmitter emitter = meshBuilder.getEmitter();
 		int texIndex = 0;
+		
+		Matrix4f matrix = rotationContainer.getRotation().getMatrix();
 		for(Mesh mesh : model) {
 			String texId = textures.get(texIndex);
 			texIndex++;
 			
+			int colorIndex = 0;
 			for(Mesh.Face face : mesh.createTriangleList()) {
 				Iterator<Mesh.Vertex> verts = face.iterator();
-				Mesh.Vertex v1 = verts.next();
-				Mesh.Vertex v2 = verts.next();
-				Mesh.Vertex v3 = verts.next();
-				Mesh.Vertex v4 = (verts.hasNext()) ? verts.next() : v3; //If somehow there are quads mixed in, emit them as-is instead of making a degenerate triangle
+				//Mesh.Vertex v1 = verts.next();
+				//Mesh.Vertex v2 = verts.next();
+				//Mesh.Vertex v3 = verts.next();
+				
+				Mesh.Vertex v1 = transform(verts.next(), matrix);
+				Mesh.Vertex v2 = transform(verts.next(), matrix);
+				Mesh.Vertex v3 = transform(verts.next(), matrix);
+				Mesh.Vertex v4 = (verts.hasNext()) ?
+						transform(verts.next(), matrix) :
+							v3;
 				
 				emit(v1, emitter, 0);
 				emit(v2, emitter, 1);
@@ -115,14 +126,43 @@ public class GlowUnbakedModel implements UnbakedModel {
 					//	sprite = missingno;
 					//}
 				}
-				
+				emitter.colorIndex(colorIndex);
 				emitter.emit();
+				
+				colorIndex++;
 			}
 		}
 		
 		JsonUnbakedModel defaultBlockModel = (JsonUnbakedModel) modelBaker.getModel(DEFAULT_BLOCK_MODEL);
 		
 		return new BakedMeshModel(particleSprite, defaultBlockModel.getTransformations(), meshBuilder.build());
+	}
+	
+	public static Vector4f toJoml(Vector3d vec) {
+		return new Vector4f((float) vec.x(), (float) vec.y(), (float) vec.z(), 1);
+	}
+	
+	public static Vector3d toGlow(Vector4f vec) {
+		return new Vector3d(vec.x, vec.y, vec.z);
+	}
+	
+	public static Mesh.Vertex transform(Mesh.Vertex v, Matrix4f matrix) {
+		//Make a copy
+		Mesh.Vertex result = new Mesh.Vertex();
+		result.putAll(v);
+		
+		//Extract the position
+		Vector4f pos = toJoml(v.get(ShaderAttribute.POSITION, new Vector3d(0,0,0)));
+		
+		//Translate / rotate / translate
+		pos.add(-0.5f, -0.5f, -0.5f, 0f);
+		pos.mul(matrix);
+		pos.add(0.5f, 0.5f, 0.5f, 0f);
+		
+		//Stuff the new position back into the copy
+		result.put(ShaderAttribute.POSITION, toGlow(pos));
+		
+		return result;
 	}
 	
 	private static Sprite missingno = null;

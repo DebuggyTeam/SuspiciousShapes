@@ -1,0 +1,31 @@
+{
+    "variants": {
+        "facing=north": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "y": 0
+        },
+        "facing=east": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "y": 90
+        },
+        "facing=south": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "y": 180
+        },
+        "facing=west": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "y": 270
+        },
+        "facing=up": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "x": 90,
+          "y": 0
+        },
+        "facing=down": {
+          "model": "suspicious_shapes:block/oriented_test",
+          "x": 270,
+          "y": 0
+        }
+    }
+}
+

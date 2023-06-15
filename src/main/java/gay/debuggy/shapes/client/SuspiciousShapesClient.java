@@ -10,10 +10,7 @@ public class SuspiciousShapesClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient(ModContainer mod) {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(rm->new GLTFModelProvider(rm));
-		
-		//VanillaPlusVariantProvider variantProvider = new VanillaPlusVariantProvider();
-		//ModelLoadingRegistry.INSTANCE.registerVariantProvider(rm->variantProvider.attachResourceManager(rm));
+		//ModelLoadingRegistry.INSTANCE.registerVariantProvider(rm->new VanillaPlusVariantProvider(rm));
 	}
-	
 	
 }

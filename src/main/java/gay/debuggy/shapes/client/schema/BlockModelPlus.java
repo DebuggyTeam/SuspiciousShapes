@@ -1,4 +1,4 @@
-package gay.debuggy.shapes.client;
+package gay.debuggy.shapes.client.schema;
 
 import java.util.HashMap;
 

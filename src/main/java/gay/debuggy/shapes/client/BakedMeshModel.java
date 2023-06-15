@@ -45,7 +45,7 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 	
 		@Override
 		public boolean hasDepth() {
-			return false;
+			return true;
 		}
 	
 		@Override
@@ -72,7 +72,7 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 		public ModelOverrideList getOverrides() {
 			return ModelOverrideList.EMPTY;
 		}
-
+	
 	//}
 	
 	//implements FabricBakedModel {
@@ -84,6 +84,8 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 	
 		@Override
 		public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<RandomGenerator> randomSupplier, RenderContext context) {
+			
+			
 			for(Mesh mesh : meshes) {
 				context.meshConsumer().accept(mesh);
 			}

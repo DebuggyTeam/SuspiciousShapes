@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.GsonBuilder;
 
-import blue.endless.glow.model.Model;
 import blue.endless.glow.model.gltf.GLTFLoader;
+import gay.debuggy.shapes.client.schema.BlockModelPlus;
 import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import net.fabricmc.fabric.api.client.model.ModelProviderException;
 import net.fabricmc.fabric.api.client.model.ModelResourceProvider;
@@ -30,7 +30,7 @@ public class GLTFModelProvider implements ModelResourceProvider {
 	@Override
 	public @Nullable UnbakedModel loadModelResource(Identifier resourceId, ModelProviderContext context) throws ModelProviderException {
 		if (!resourceId.getPath().endsWith(".gltf")) {
-			Optional<String> maybeChild = loadResourceAsString(new Identifier(resourceId.getNamespace(), "models/"+resourceId.getPath()+".json"));
+			Optional<String> maybeChild = Resources.loadString(resourceManager, new Identifier(resourceId.getNamespace(), "models/"+resourceId.getPath()+".json"));
 			if (maybeChild.isEmpty()) {
 				return null; //Let vanilla handle it, and then throw an error
 			}
@@ -43,7 +43,7 @@ public class GLTFModelProvider implements ModelResourceProvider {
 			//Load vanillaPlus model
 			System.out.println("Operating in blockmodel-plus mode.");
 			Identifier parentId = new Identifier(modelChild.parent);
-			Optional<String> maybeParent = loadResourceAsString(new Identifier(parentId.getNamespace(), "models/"+parentId.getPath()));
+			Optional<String> maybeParent = Resources.loadString(resourceManager, new Identifier(parentId.getNamespace(), "models/"+parentId.getPath()));
 			if (maybeParent.isEmpty()) {
 				System.out.println("Couldn't find "+resourceId);
 				// Provide the default missingno cube
@@ -82,42 +82,5 @@ public class GLTFModelProvider implements ModelResourceProvider {
 		}
 		
 		return null;
-	}
-	
-	/*
-	public static Optional<String> loadString(Optional<Resource> resource) {
-		if (resource.isEmpty()) return Optional.empty();
-		
-		try(InputStream in = resource.get().open()) {
-			return Optional.of(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-		} catch (IOException ex) {
-			return Optional.empty();
-		}
-	}*/
-	
-	public Optional<String> loadResourceAsString(Identifier id) {
-		Optional<Resource> maybeResource = resourceManager.getResource(id);
-		if (maybeResource.isEmpty()) return Optional.empty();
-		try(InputStream in = maybeResource.get().open()) {
-			return Optional.of(new String(in.readAllBytes(), StandardCharsets.UTF_8));
-		} catch (IOException ex) {
-			return Optional.empty();
-		}
-	}
-
-	public static @Nullable Model loadModel(Identifier resourceId, ResourceManager resourceManager) {
-		Optional<Resource> maybeResource = resourceManager.getResource(new Identifier(resourceId.getNamespace(), "models/"+resourceId.getPath()));
-		if (maybeResource.isEmpty()) {
-			return null;
-		}
-		
-		try (InputStream in = maybeResource.get().open()) {
-			String resData = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-			return GLTFLoader.loadString(resData);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }

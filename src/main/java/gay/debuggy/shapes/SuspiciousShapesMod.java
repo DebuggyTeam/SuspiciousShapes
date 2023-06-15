@@ -19,10 +19,14 @@ public class SuspiciousShapesMod implements ModInitializer {
 
 	@Override
 	public void onInitialize(ModContainer mod) {
-		LOGGER.info("Hello Quilt world from {}!", mod.metadata().name());
+		//LOGGER.info("Hello Quilt world from {}!", mod.metadata().name());
 		
 		Block block = new Block(QuiltBlockSettings.copyOf(Blocks.STONE));
 		Registry.register(Registries.BLOCK, new Identifier("suspicious_shapes", "test"), block);
 		Registry.register(Registries.ITEM, new Identifier("suspicious_shapes", "test"), new BlockItem(block, new QuiltItemSettings()));
+		
+		TestBlock block2 = new TestBlock(QuiltBlockSettings.copyOf(Blocks.IRON_BLOCK));
+		Registry.register(Registries.BLOCK, new Identifier("suspicious_shapes", "test2"), block2);
+		Registry.register(Registries.ITEM, new Identifier("suspicious_shapes", "test2"), new BlockItem(block2, new QuiltItemSettings()));
 	}
 }

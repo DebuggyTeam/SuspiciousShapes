@@ -24,66 +24,63 @@ import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.model.ModelHelper;
 import net.fabricmc.fabric.impl.client.indigo.renderer.IndigoRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelBaker;
 import net.minecraft.client.render.model.UnbakedModel;
-import net.minecraft.client.render.model.json.JsonUnbakedModel;
+import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.client.resource.Material;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.AffineTransformation;
 
 public class GlowUnbakedModel implements UnbakedModel {
-	private static final Identifier DEFAULT_BLOCK_MODEL = new Identifier("minecraft:block/block");
 	
+	private final Identifier id;
 	protected final Model model;
 	private List<String> textures = new ArrayList<>();
+	private String particleId = null;
 	private Map<String, Sprite> sprites = new HashMap<>();
+	private ModelTransformation transform = ModelHelper.MODEL_TRANSFORM_BLOCK;
 	
-	
-	public GlowUnbakedModel(Model glowModel) {
+	public GlowUnbakedModel(Model glowModel, Identifier id) {
 		this.model = glowModel;
+		this.id = id;
 		for(Mesh mesh : model) {
 			String texId = mesh.getMaterial().get(ShaderAttribute.DIFFUSE_TEXTURE);
 			if (texId!=null) textures.add(texId);
 		}
-		//textures.add(TextureManager.MISSING_IDENTIFIER);
+	}
+	
+	public Identifier getResourceId() {
+		return id;
 	}
 	
 	@Override
 	public Collection<Identifier> getModelDependencies() {
-		//TODO: Get models up-referenced
-		
 		//Does not depend on other models
-		
-		return ImmutableList.of(DEFAULT_BLOCK_MODEL);
+		return ImmutableList.of();
 	}
-	
-	
-	//public Map<Identifier, Sprite> getSprites() {
-	//	return sprites;
-	//}
 	
 	@Override
 	public BakedModel bake(ModelBaker modelBaker, Function<Material, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-		//System.out.println("Baking: "+modelId);
+		
 		
 		sprites.clear();
-		
-		//Material missingnoId = new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, TextureManager.MISSING_IDENTIFIER);
-		//Sprite missingno = textureGetter.apply(missingnoId);
 		Sprite particleSprite = null;
-		System.out.println("Resolving textures...");
+		if (particleId != null) particleSprite = resolveSprite(particleId, textureGetter);
+		
 		for(String s : textures) {
 			Sprite cur = resolveSprite(s, textureGetter, sprites);
 			if (particleSprite == null) particleSprite = cur;
 		}
+		
 		if (particleSprite == null) particleSprite = resolveMissingno(textureGetter);
-		System.out.println("Textures resolved.");
 		
 		
 		//The following doesn't really make things run on Sodium without Indium, but it makes it stop crashing.
@@ -97,7 +94,9 @@ public class GlowUnbakedModel implements UnbakedModel {
 			String texId = textures.get(texIndex);
 			texIndex++;
 			
-			int colorIndex = 0;
+			int colorIndex = mesh.getMaterial().get(ShaderAttribute.COLOR_INDEX, -1);
+			
+			//int colorIndex = 0;
 			for(Mesh.Face face : mesh.createTriangleList()) {
 				Iterator<Mesh.Vertex> verts = face.iterator();
 				//Mesh.Vertex v1 = verts.next();
@@ -126,16 +125,17 @@ public class GlowUnbakedModel implements UnbakedModel {
 					//	sprite = missingno;
 					//}
 				}
+				
 				emitter.colorIndex(colorIndex);
 				emitter.emit();
 				
-				colorIndex++;
+				//colorIndex++;
 			}
 		}
 		
-		JsonUnbakedModel defaultBlockModel = (JsonUnbakedModel) modelBaker.getModel(DEFAULT_BLOCK_MODEL);
+		//JsonUnbakedModel defaultBlockModel = (JsonUnbakedModel) modelBaker.getModel(DEFAULT_BLOCK_MODEL);
 		
-		return new BakedMeshModel(particleSprite, defaultBlockModel.getTransformations(), meshBuilder.build());
+		return new BakedMeshModel(particleSprite, transform, meshBuilder.build());
 	}
 	
 	public static Vector4f toJoml(Vector3d vec) {
@@ -144,6 +144,29 @@ public class GlowUnbakedModel implements UnbakedModel {
 	
 	public static Vector3d toGlow(Vector4f vec) {
 		return new Vector3d(vec.x, vec.y, vec.z);
+	}
+	
+	public void setModelTransformation(ModelTransformation transform) {
+		Transformation thirdPersonLeftHand = select(this.transform, transform, ModelTransformationMode.THIRD_PERSON_LEFT_HAND);
+		Transformation thirdPersonRightHand = select(this.transform, transform, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND);
+		if (thirdPersonLeftHand == Transformation.IDENTITY) thirdPersonLeftHand = thirdPersonRightHand;
+		
+		Transformation firstPersonLeftHand = select(this.transform, transform, ModelTransformationMode.FIRST_PERSON_LEFT_HAND);
+		Transformation firstPersonRightHand = select(this.transform, transform, ModelTransformationMode.FIRST_PERSON_RIGHT_HAND);
+		if (firstPersonLeftHand == Transformation.IDENTITY) firstPersonLeftHand = firstPersonRightHand;
+		
+		Transformation head = select(this.transform, transform, ModelTransformationMode.HEAD);
+		Transformation gui = select(this.transform, transform, ModelTransformationMode.GUI);
+		Transformation ground = select(this.transform, transform, ModelTransformationMode.GROUND);
+		Transformation fixed = select(this.transform, transform, ModelTransformationMode.FIXED);
+		
+		this.transform = new ModelTransformation(thirdPersonLeftHand, thirdPersonRightHand, firstPersonLeftHand, firstPersonRightHand, head, gui, ground, fixed);
+	}
+	
+	private Transformation select(ModelTransformation self, ModelTransformation other, ModelTransformationMode mode) {
+		return (other.isTransformationDefined(mode)) ?
+				other.getTransformation(mode) :
+				self.getTransformation(mode);
 	}
 	
 	public static Mesh.Vertex transform(Mesh.Vertex v, Matrix4f matrix) {
@@ -174,6 +197,31 @@ public class GlowUnbakedModel implements UnbakedModel {
 		return missingno;
 	}
 	
+	public static @Nullable Sprite resolveSprite(String id, Function<Material, Sprite> textureGetter) {
+		String namespace = "minecraft";
+		String path = "";
+		
+		if (id.contains(":")) {
+			String[] parts = id.split(":");
+			namespace = parts[0];
+			path = parts[1];
+		} else {
+			namespace = "minecraft";
+			path = id;
+		}
+
+		try {
+			Sprite sprite = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
+			if (sprite == null) {
+				return resolveMissingno(textureGetter);
+			} else {
+				return sprite;
+			}
+		} catch (Exception ex) {
+			return resolveMissingno(textureGetter);
+		}
+	}
+	
 	public static @Nullable Sprite resolveSprite(String id, Function<Material, Sprite> textureGetter, Map<String, Sprite> dest) {
 		String namespace = "minecraft";
 		String path = "";
@@ -189,34 +237,32 @@ public class GlowUnbakedModel implements UnbakedModel {
 		
 		//Is the path an up-reference?
 		if (path.startsWith("#")) {
+			SuspiciousShapesClient.LOGGER.warn("Unresolved up-reference "+new Identifier(id)+" in model "+id);
+			dest.put(id, resolveMissingno(textureGetter));
+			/*
 			path = path.substring(1);
 			try {
 				Sprite sprite = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
 				if (sprite == null) {
-					System.out.println("  Up-Reference "+path+" resolved to null. Using missingno.");
 					dest.put(id, resolveMissingno(textureGetter));
 				} else {
-					System.out.println("  Up-Reference "+path+" resolved successfully.");
 					dest.put(id, sprite);
 					return sprite;
 				}
 			} catch (Exception ex) {
-				System.out.println("  Up-Reference "+path+" errored. Using missingno.");
 				dest.put(id, resolveMissingno(textureGetter));
-			}
+			}*/
 		} else {
 			try {
 				Sprite sprite = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
 				if (sprite == null) {
-					System.out.println("  "+id+" resolved to null. Using missingno.");
+					SuspiciousShapesClient.LOGGER.warn("Can't find texture "+new Identifier(id)+" referenced from model "+id);
 					dest.put(id, resolveMissingno(textureGetter));
 				} else {
-					System.out.println("  "+id+" resolved successfully.");
 					dest.put(id, sprite);
 					return sprite;
 				}
 			} catch (Exception ex) {
-				System.out.println("  "+id+" errored. Using missingno.");
 				dest.put(id, resolveMissingno(textureGetter));
 			}
 		}

@@ -11,7 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Model implements Iterable<Mesh> {
+	protected ShaderAttributeHolder environment = new Material();
 	protected List<Mesh> meshes = new ArrayList<>();
+	
+	public ShaderAttributeHolder getEnvironment() {
+		return environment;
+	}
 	
 	public void transform(Matrix3d matrix) {
 		for(Mesh mesh : meshes) mesh.transform(matrix);

@@ -1,6 +1,0 @@
-{
-    "parent": "suspicious_shapes:block/test_gltf.gltf",
-    "textures": {
-        "all": "minecraft:block/stone"
-    }
-}

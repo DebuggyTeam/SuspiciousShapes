@@ -24,4 +24,7 @@ public class ShaderAttribute<T> {
 	
 	public static final ShaderAttribute<Double> ROUGHNESS = new ShaderAttribute<>("roughness");
 	public static final ShaderAttribute<Double> METALNESS = new ShaderAttribute<>("metalness");
+	
+	//Additional minecraft attributes
+	public static final ShaderAttribute<Integer> COLOR_INDEX = new ShaderAttribute<>("color_index");
 }

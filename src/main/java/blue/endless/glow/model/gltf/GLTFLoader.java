@@ -20,7 +20,9 @@ import blue.endless.glow.model.gltf.impl.GLTFData;
 
 public class GLTFLoader {
 	public static Model loadString(String json) throws IOException {
-		GLTFData gltfData = new GsonBuilder().create().fromJson(json, GLTFData.class);
+		GLTFData gltfData = new GsonBuilder()
+				//.registerTypeAdapter(ModelTransformation.class, foo)
+				.create().fromJson(json, GLTFData.class);
 		//GLTFData gltfData = Jankson.builder().build().fromJson(json, GLTFData.class);
 		
 		Model result = new Model();

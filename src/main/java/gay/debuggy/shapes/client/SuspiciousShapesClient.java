@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 
 public class SuspiciousShapesClient implements ClientModInitializer {
-	
+	public static final String MODID = "suspicious_shapes";
 	public static final Logger LOGGER = LoggerFactory.getLogger("Suspicious Shapes");
 
 	@Override

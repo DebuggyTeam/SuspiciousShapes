@@ -13,6 +13,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 
 import blue.endless.glow.model.Mesh;
 import blue.endless.glow.model.Model;
@@ -75,6 +76,11 @@ public class GlowUnbakedModel implements UnbakedModel {
 		Sprite particleSprite = null;
 		if (particleId != null) particleSprite = resolveSprite(particleId, textureGetter);
 		
+		int numMeshes = Iterators.size(model.iterator());
+		while(textures.size()<numMeshes) {
+			textures.add(TextureManager.MISSING_IDENTIFIER.toString());
+		}
+		
 		for(String s : textures) {
 			Sprite cur = resolveSprite(s, textureGetter, sprites);
 			if (particleSprite == null) particleSprite = cur;
@@ -98,13 +104,16 @@ public class GlowUnbakedModel implements UnbakedModel {
 			
 			//int colorIndex = 0;
 			for(Mesh.Face face : mesh.createTriangleList()) {
+				
 				Iterator<Mesh.Vertex> verts = face.iterator();
 				//Mesh.Vertex v1 = verts.next();
 				//Mesh.Vertex v2 = verts.next();
 				//Mesh.Vertex v3 = verts.next();
-				
+				if (!verts.hasNext()) continue;
 				Mesh.Vertex v1 = transform(verts.next(), matrix);
+				if (!verts.hasNext()) continue;
 				Mesh.Vertex v2 = transform(verts.next(), matrix);
+				if (!verts.hasNext()) continue;
 				Mesh.Vertex v3 = transform(verts.next(), matrix);
 				Mesh.Vertex v4 = (verts.hasNext()) ?
 						transform(verts.next(), matrix) :
@@ -178,7 +187,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 		Vector4f pos = toJoml(v.get(ShaderAttribute.POSITION, new Vector3d(0,0,0)));
 		
 		//Translate / rotate / translate
-		pos.add(-0.5f, -0.5f, -0.5f, 0f);
+		//pos.add(-0.5f, -0.5f, -0.5f, 0f); // Shapes are now pre-centered by the model loader
 		pos.mul(matrix);
 		pos.add(0.5f, 0.5f, 0.5f, 0f);
 		
@@ -270,14 +279,16 @@ public class GlowUnbakedModel implements UnbakedModel {
 	}
 	
 	private static void emit(Mesh.Vertex v, QuadEmitter emitter, int index) {
-		Vector3d pos = v.get(ShaderAttribute.POSITION);
-		Vector2d tex = v.get(ShaderAttribute.TEXCOORD);
-		Vector3d norm = v.get(ShaderAttribute.NORMAL);
+		Vector3d pos = v.get(ShaderAttribute.POSITION, new Vector3d(0,0,0));
+		Vector2d tex = v.get(ShaderAttribute.TEXCOORD, new Vector2d(0,0));
+		Vector3d norm = v.get(ShaderAttribute.NORMAL, new Vector3d(0,1,0));
+		Integer vertexColor = v.get(ShaderAttribute.DIFFUSE_COLOR, null);
+		int col = (vertexColor!=null) ? vertexColor : -1;
 		
 		emitter
 			.pos(index, (float) pos.x(), (float) pos.y(), (float) pos.z())
 			.uv(index, (float) tex.x(), (float) tex.y())
-			.color(-1, -1, -1, -1)
+			.color(index, col)
 			.normal(index, (float) norm.x(), (float) norm.y(), (float) norm.z());
 	}
 

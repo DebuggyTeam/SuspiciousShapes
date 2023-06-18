@@ -6,6 +6,7 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 
 public class BlockModelPlus {
 	public String parent = null;
+	public String loader = null;
 	public boolean ambientocclusion = true;
 	public HashMap<String, String> textures = new HashMap<>();
 	public ModelTransformation display = ModelTransformation.NONE;

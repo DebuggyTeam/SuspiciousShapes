@@ -185,14 +185,18 @@ public class GlowUnbakedModel implements UnbakedModel {
 		
 		//Extract the position
 		Vector4f pos = toJoml(v.get(ShaderAttribute.POSITION, new Vector3d(0,0,0)));
+		Vector4f normal = toJoml(v.get(ShaderAttribute.NORMAL, new Vector3d(0,1,0)));
 		
 		//Translate / rotate / translate
 		//pos.add(-0.5f, -0.5f, -0.5f, 0f); // Shapes are now pre-centered by the model loader
 		pos.mul(matrix);
 		pos.add(0.5f, 0.5f, 0.5f, 0f);
 		
+		normal = normal.mul(matrix).normalize();
+		
 		//Stuff the new position back into the copy
 		result.put(ShaderAttribute.POSITION, toGlow(pos));
+		result.put(ShaderAttribute.NORMAL, toGlow(normal));
 		
 		return result;
 	}

@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext.QuadTransform;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
@@ -84,8 +85,6 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 	
 		@Override
 		public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<RandomGenerator> randomSupplier, RenderContext context) {
-			
-			
 			for(Mesh mesh : meshes) {
 				context.meshConsumer().accept(mesh);
 			}

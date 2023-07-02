@@ -59,6 +59,60 @@ public class Mesh {
 		return result;
 	}
 	
+	/**
+	 * Creates a list of mixed polygons. Welds triangles into quads if possible!
+	 */
+	public List<Face> createQuadList() {
+		int faceCount = indices.length / 3;
+		List<Face> result = new ArrayList<>();
+		//Face lastFace = null;
+		for(int i=0; i<faceCount; i++) {
+			int baseIndex = i*3;
+			int index1 = indices[baseIndex+0];
+			int index2 = indices[baseIndex+1];
+			int index3 = indices[baseIndex+2];
+			Face curFace = new Face();
+			curFace.vertices.add(getVertex(index1));
+			curFace.vertices.add(getVertex(index2));
+			curFace.vertices.add(getVertex(index3));
+			
+			/*
+			//Attempt welding
+			if (lastFace!=null) {
+				//Check to see if the first two vertices match the last two
+				System.out.println("Weld attempt:");
+				for(Mesh.Vertex v : lastFace) {
+					System.out.println("  "+v.get(ShaderAttribute.POSITION));
+				}
+				System.out.println();
+				for(Mesh.Vertex v : curFace) {
+					System.out.println("  "+v.get(ShaderAttribute.POSITION));
+				}
+				
+				if (
+					lastFace.vertices.get(0).equals(curFace.vertices.get(0)) &&
+					lastFace.vertices.get(1).equals(curFace.vertices.get(1)) ) {
+					
+					//We're just going to do the weld for now
+					//TODO: Check to ensure a convex and coplanar merged quad
+					System.out.println("WELD CHECK SUCCEEDED.");
+				} else {
+					lastFace = curFace;
+				}
+				//Attempt to weld
+				//If weld failure:
+				lastFace = curFace;
+				//Else if weld success lastFace = null;
+			} else {
+				lastFace = curFace;
+			}*/
+			
+			
+			result.add(curFace);
+		}
+		return result;
+	}
+	
 	public Material getMaterial() {
 		return material;
 	}

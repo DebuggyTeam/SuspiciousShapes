@@ -56,7 +56,6 @@ public class GLTFLoader {
 				
 				material.put(ShaderAttribute.DIFFUSE_TEXTURE, imageSource.uri);
 				
-				
 				for(int i=0; i<positionBuffer.length; i++) {
 					Vector3d pos = positionBuffer[i];
 					positionBuffer[i] = new Vector3d(pos.x() + globalTranslate.x(), pos.y() + globalTranslate.y(), pos.z() + globalTranslate.z());

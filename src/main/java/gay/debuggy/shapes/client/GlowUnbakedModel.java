@@ -10,6 +10,8 @@ import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import com.google.common.collect.ImmutableList;
@@ -39,6 +41,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 
 public class GlowUnbakedModel implements UnbakedModel {
 	
@@ -71,7 +74,6 @@ public class GlowUnbakedModel implements UnbakedModel {
 	@Override
 	public BakedModel bake(ModelBaker modelBaker, Function<Material, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
 		
-		
 		sprites.clear();
 		Sprite particleSprite = null;
 		if (particleId != null) particleSprite = resolveSprite(particleId, textureGetter);
@@ -95,54 +97,62 @@ public class GlowUnbakedModel implements UnbakedModel {
 		QuadEmitter emitter = meshBuilder.getEmitter();
 		int texIndex = 0;
 		
+		
 		Matrix4f matrix = rotationContainer.getRotation().getMatrix();
+		Quaternionf leftRotation = rotationContainer.getRotation().getLeftRotation();
+		Quaternionf rightRotation = rotationContainer.getRotation().getRightRotation();
+		
+		
 		for(Mesh mesh : model) {
 			String texId = textures.get(texIndex);
 			texIndex++;
 			
 			int colorIndex = mesh.getMaterial().get(ShaderAttribute.COLOR_INDEX, -1);
+			int bakeFlags = MutableQuadView.BAKE_NORMALIZED;
+			if (mesh.getMaterial().get(ShaderAttribute.UV_LOCK, false)) {
+				bakeFlags |= MutableQuadView.BAKE_LOCK_UV;
+			}
+			//boolean ao = mesh.getMaterial().get(ShaderAttribute.APPLY_AO, Boolean.TRUE);
 			
 			//int colorIndex = 0;
-			for(Mesh.Face face : mesh.createTriangleList()) {
+			for(Mesh.Face face : mesh.createQuadList()) {
 				
 				Iterator<Mesh.Vertex> verts = face.iterator();
-				//Mesh.Vertex v1 = verts.next();
-				//Mesh.Vertex v2 = verts.next();
-				//Mesh.Vertex v3 = verts.next();
 				if (!verts.hasNext()) continue;
-				Mesh.Vertex v1 = transform(verts.next(), matrix);
+				Mesh.Vertex v1 = verts.next();
 				if (!verts.hasNext()) continue;
-				Mesh.Vertex v2 = transform(verts.next(), matrix);
+				Mesh.Vertex v2 = verts.next();
 				if (!verts.hasNext()) continue;
-				Mesh.Vertex v3 = transform(verts.next(), matrix);
-				Mesh.Vertex v4 = (verts.hasNext()) ?
-						transform(verts.next(), matrix) :
-							v3;
+				Mesh.Vertex v3 = verts.next();
+				Mesh.Vertex v4 = (verts.hasNext()) ? verts.next() : v3;
+				
+				//emitter.pos(0, toJoml3(v1.get(ShaderAttribute.POSITION)));
+				//emitter.pos(1, toJoml3(v2.get(ShaderAttribute.POSITION)));
+				//emitter.pos(2, toJoml3(v3.get(ShaderAttribute.POSITION)));
+				//emitter.pos(3, toJoml3(v4.get(ShaderAttribute.POSITION)));
+				
+				//The continues: We bail early from face processing if at any point we discover not enough vertices.
+				v1 = transform(v1, matrix, leftRotation, rightRotation);
+				v2 = transform(v2, matrix, leftRotation, rightRotation);
+				v3 = transform(v3, matrix, leftRotation, rightRotation);
+				v4 = transform(v4, matrix, leftRotation, rightRotation);
+				
+				emitter.nominalFace(directionFromVector(v1.get(ShaderAttribute.NORMAL)));
 				
 				emit(v1, emitter, 0);
 				emit(v2, emitter, 1);
 				emit(v3, emitter, 2);
 				emit(v4, emitter, 3);
 				
-				//String texId = mesh.getMaterial().get(ShaderAttribute.DIFFUSE_TEXTURE);
 				if (texId!=null) {
 					Sprite sprite = sprites.get(texId);
-					emitter.spriteBake(sprite, MutableQuadView.BAKE_NORMALIZED);
-					//if (maybe!=null) {
-					//	sprite = maybe;
-					//} else {
-					//	sprite = missingno;
-					//}
+					emitter.spriteBake(sprite, bakeFlags);
 				}
 				
 				emitter.colorIndex(colorIndex);
 				emitter.emit();
-				
-				//colorIndex++;
 			}
 		}
-		
-		//JsonUnbakedModel defaultBlockModel = (JsonUnbakedModel) modelBaker.getModel(DEFAULT_BLOCK_MODEL);
 		
 		return new BakedMeshModel(particleSprite, transform, meshBuilder.build());
 	}
@@ -153,6 +163,10 @@ public class GlowUnbakedModel implements UnbakedModel {
 	
 	public static Vector3d toGlow(Vector4f vec) {
 		return new Vector3d(vec.x, vec.y, vec.z);
+	}
+	
+	public static Vector3f toJoml3(Vector3d vec) {
+		return new Vector3f((float) vec.x(), (float) vec.y(), (float) vec.z());
 	}
 	
 	public void setModelTransformation(ModelTransformation transform) {
@@ -178,27 +192,45 @@ public class GlowUnbakedModel implements UnbakedModel {
 				self.getTransformation(mode);
 	}
 	
-	public static Mesh.Vertex transform(Mesh.Vertex v, Matrix4f matrix) {
+	public static Mesh.Vertex transform(Mesh.Vertex v, Matrix4f matrix, Quaternionf leftRotation, Quaternionf rightRotation) {
 		//Make a copy
 		Mesh.Vertex result = new Mesh.Vertex();
 		result.putAll(v);
 		
 		//Extract the position
 		Vector4f pos = toJoml(v.get(ShaderAttribute.POSITION, new Vector3d(0,0,0)));
-		Vector4f normal = toJoml(v.get(ShaderAttribute.NORMAL, new Vector3d(0,1,0)));
 		
 		//Translate / rotate / translate
-		//pos.add(-0.5f, -0.5f, -0.5f, 0f); // Shapes are now pre-centered by the model loader
+		// Shapes are pre-centered around the origin by the model loader, so we can skip the first translate.
 		pos.mul(matrix);
 		pos.add(0.5f, 0.5f, 0.5f, 0f);
 		
-		normal = normal.mul(matrix).normalize();
+		//Extract and rotate the normal
+		Vector4f normal = toJoml(v.get(ShaderAttribute.NORMAL, new Vector3d(0,1,0)));
+		normal = normal.rotate(leftRotation).rotate(rightRotation);
+		
+		//TODO: Figure out which direction the vertex lies on and apply UVLock
 		
 		//Stuff the new position back into the copy
 		result.put(ShaderAttribute.POSITION, toGlow(pos));
 		result.put(ShaderAttribute.NORMAL, toGlow(normal));
 		
 		return result;
+	}
+	
+	public Direction directionFromVector(Vector3d vec) {
+		double dx = Math.abs(vec.x());
+		double dy = Math.abs(vec.y());
+		double dz = Math.abs(vec.z());
+		
+		if (dx>dy && dx>dz) {
+			return (vec.x()>0) ? Direction.EAST : Direction.WEST;
+		} else if (dz>dy) {
+			return (vec.z()>0) ? Direction.SOUTH : Direction.NORTH;
+		} else {
+			
+			return (vec.y()>0) ? Direction.UP : Direction.DOWN;
+		}
 	}
 	
 	private static Sprite missingno = null;
@@ -288,6 +320,8 @@ public class GlowUnbakedModel implements UnbakedModel {
 		Vector3d norm = v.get(ShaderAttribute.NORMAL, new Vector3d(0,1,0));
 		Integer vertexColor = v.get(ShaderAttribute.DIFFUSE_COLOR, null);
 		int col = (vertexColor!=null) ? vertexColor : -1;
+		
+		
 		
 		emitter
 			.pos(index, (float) pos.x(), (float) pos.y(), (float) pos.z())

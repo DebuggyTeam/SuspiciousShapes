@@ -72,6 +72,9 @@ public class GLTFData {
 	 * IMPL NOTE FOR get*Access METHODS
 	 * I'm assuming in this code that "byteStride" will be some multiple of sizeof(componentType).
 	 * If this is not true then the data will immediately become misaligned.
+	 * 
+	 * We do things this way because otherwise we'd need to re-slice the FloatBuffer from the underlying bytebuffer at
+	 * every single element access.
 	 */
 	
 	

@@ -61,4 +61,13 @@ public class AbstractShaderAttributeHolder implements ShaderAttributeHolder {
 
 		return result.toString();
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof ShaderAttributeHolder s) {
+			return this.getAll().equals(s.getAll());
+		} else {
+			return false;
+		}
+	}
 }

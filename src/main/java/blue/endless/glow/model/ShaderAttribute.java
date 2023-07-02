@@ -28,4 +28,6 @@ public class ShaderAttribute<T> {
 	//Additional minecraft attributes
 	public static final ShaderAttribute<Integer> COLOR_INDEX = new ShaderAttribute<>("color_index");
 	public static final ShaderAttribute<Integer> DIFFUSE_COLOR = new ShaderAttribute<>("diffuse_color");
+	public static final ShaderAttribute<Boolean> UV_LOCK = new ShaderAttribute<>("uvlock");
+	public static final ShaderAttribute<Boolean> APPLY_AO = new ShaderAttribute<>("ao");
 }

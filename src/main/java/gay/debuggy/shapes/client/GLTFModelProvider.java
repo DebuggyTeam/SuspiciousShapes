@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.gson.GsonBuilder;
 
+import blue.endless.glow.model.Mesh;
 import blue.endless.glow.model.ShaderAttribute;
 import blue.endless.glow.model.gltf.GLTFLoader;
 import gay.debuggy.shapes.client.schema.BlockModelPlus;
@@ -75,53 +76,61 @@ public class GLTFModelProvider implements ModelResourceProvider {
 			return null; //Let vanilla handle it, and then throw an error
 		}
 		
-		BlockModelPlus modelChild = new GsonBuilder()
-				//These type adapters are cleaned-up copies of Mojang code since it's private
-				.registerTypeAdapter(Transformation.class, new TransformationDeserializer())
-				.registerTypeAdapter(ModelTransformation.class, new ModelTransformationDeserializer())
-				.create().fromJson(maybeChild.get(), BlockModelPlus.class);
-		if (modelChild.parent == null || FORBIDDEN_PARENTS.contains(modelChild.parent)) {
-			return null; //Let vanilla handle it
-		}
-		
-		//if (modelChild.loader == null || !VALID_LOADER_KEYS.contains(modelChild.loader)) return null; // Require a valid "loader" key to prevent other mods from exploding
-		
-		Identifier parentId = new Identifier(modelChild.parent);
-		if (alreadyTraversed.contains(parentId.toString())) {
-			throw new ModelProviderException("Encountered a circular reference while resolving model '"+resourceId+"' - resources loaded: "+alreadyTraversed);
-		}
-		
-		alreadyTraversed.add(parentId.toString());
-		
-		UnbakedModel parentModel = null;
-		
-		if (modelChild.loader!=null && modelChild.loader.equals(GLTF_LOADER_KEY.toString())) {
-			parentModel = loadGltfResourceDirectly(parentId, context, alreadyTraversed);
-		} else if (modelChild.loader!=null && modelChild.loader.equals(OBJ_LOADER_KEY.toString())) {
-			parentModel = null; //TODO: Load Obj
-		} else {
-			parentModel = loadModelResource(parentId, context, alreadyTraversed);
-		}
-		
-		if (parentModel == null) return null;
-		
-		//UnbakedModel parentModel = context.loadModel(new Identifier(modelChild.parent));
-		if (parentModel instanceof GlowUnbakedModel glowParent) {
-			// Operating in blockmodel-plus mode since an ancestor was ours
-			glowParent.provideTextures(modelChild.textures);
-			if (modelChild.display != null) glowParent.setModelTransformation(modelChild.display);
-			if (modelChild.colorIndexes != null) {
-				for(int i=0; i<modelChild.colorIndexes.length; i++) {
-					int colorIndex = modelChild.colorIndexes[i];
-					if (i >= glowParent.model.getMeshes().size()) break;
-					glowParent.model.getMeshes().get(i).getMaterial().put(ShaderAttribute.COLOR_INDEX, colorIndex);
-				}
+		try {
+			BlockModelPlus modelChild = new GsonBuilder()
+					//These type adapters are cleaned-up copies of Mojang code since it's private
+					.registerTypeAdapter(Transformation.class, new TransformationDeserializer())
+					.registerTypeAdapter(ModelTransformation.class, new ModelTransformationDeserializer())
+					.create().fromJson(maybeChild.get(), BlockModelPlus.class);
+			if (modelChild.parent == null || FORBIDDEN_PARENTS.contains(modelChild.parent)) {
+				return null; //Let vanilla handle it
 			}
 			
-			return glowParent;
-		} else {
+			//if (modelChild.loader == null || !VALID_LOADER_KEYS.contains(modelChild.loader)) return null; // Require a valid "loader" key to prevent other mods from exploding
+			
+			Identifier parentId = new Identifier(modelChild.parent);
+			if (alreadyTraversed.contains(parentId.toString())) {
+				throw new ModelProviderException("Encountered a circular reference while resolving model '"+resourceId+"' - resources loaded: "+alreadyTraversed);
+			}
+			
+			alreadyTraversed.add(parentId.toString());
+			
+			UnbakedModel parentModel = null;
+			
+			if (modelChild.loader!=null && modelChild.loader.equals(GLTF_LOADER_KEY.toString())) {
+				parentModel = loadGltfResourceDirectly(parentId, context, alreadyTraversed);
+			} else if (modelChild.loader!=null && modelChild.loader.equals(OBJ_LOADER_KEY.toString())) {
+				parentModel = null; //TODO: Load Obj
+			} else {
+				parentModel = loadModelResource(parentId, context, alreadyTraversed);
+			}
+			
+			if (parentModel == null) return null;
+			
+			//UnbakedModel parentModel = context.loadModel(new Identifier(modelChild.parent));
+			if (parentModel instanceof GlowUnbakedModel glowParent) {
+				// Operating in blockmodel-plus mode since an ancestor was ours
+				glowParent.provideTextures(modelChild.textures);
+				if (modelChild.display != null) glowParent.setModelTransformation(modelChild.display);
+				if (modelChild.colorIndexes != null) {
+					for(int i=0; i<modelChild.colorIndexes.length; i++) {
+						int colorIndex = modelChild.colorIndexes[i];
+						if (i >= glowParent.model.getMeshes().size()) break;
+						glowParent.model.getMeshes().get(i).getMaterial().put(ShaderAttribute.COLOR_INDEX, colorIndex);
+					}
+				}
+				if (modelChild.uvLock) {
+					for(Mesh mesh : glowParent.model) {
+						mesh.getMaterial().put(ShaderAttribute.UV_LOCK, Boolean.TRUE);
+					}
+				}
+				
+				return glowParent;
+			} else {
+				return null;
+			}
+		} catch (Throwable t) {
 			return null;
 		}
-		
 	}
 }

@@ -119,7 +119,7 @@ public class GLTFModelProvider implements ModelResourceProvider {
 						glowParent.model.getMeshes().get(i).getMaterial().put(ShaderAttribute.COLOR_INDEX, colorIndex);
 					}
 				}
-				if (modelChild.uvLock) {
+				if (modelChild.uvlock) {
 					for(Mesh mesh : glowParent.model) {
 						mesh.getMaterial().put(ShaderAttribute.UV_LOCK, Boolean.TRUE);
 					}

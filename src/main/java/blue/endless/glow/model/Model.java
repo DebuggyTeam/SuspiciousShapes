@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Model implements Iterable<Mesh> {
-	protected ShaderAttributeHolder environment = new Material();
+	protected Material environment = new Material();
 	protected List<Mesh> meshes = new ArrayList<>();
 	
 	public ShaderAttributeHolder getEnvironment() {
@@ -33,5 +33,15 @@ public class Model implements Iterable<Mesh> {
 	@Override
 	public Iterator<Mesh> iterator() {
 		return meshes.iterator();
+	}
+	
+	public Model copy() {
+		Model result = new Model();
+		result.environment.putAll(environment);
+		for(Mesh m : meshes) {
+			result.meshes.add(m.copy());
+		}
+		
+		return result;
 	}
 }

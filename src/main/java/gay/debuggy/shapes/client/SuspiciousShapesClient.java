@@ -5,7 +5,7 @@ import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
+import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 
 public class SuspiciousShapesClient implements ClientModInitializer {
 	public static final String MODID = "suspicious_shapes";
@@ -13,7 +13,7 @@ public class SuspiciousShapesClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient(ModContainer mod) {
-		ModelLoadingRegistry.INSTANCE.registerResourceProvider(rm->new GLTFModelProvider(rm));
+		PreparableModelLoadingPlugin.register(SuspiciousShapesModelLoadingPlugin::loadData, new SuspiciousShapesModelLoadingPlugin());
 	}
 	
 }

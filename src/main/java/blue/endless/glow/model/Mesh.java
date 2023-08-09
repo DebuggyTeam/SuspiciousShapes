@@ -182,4 +182,20 @@ public class Mesh {
 	
 	public static class Vertex extends AbstractShaderAttributeHolder {
 	}
+	
+	public Mesh copy() {
+		Material resultMaterial = new Material();
+		resultMaterial.putAll(material);
+		Mesh result = new Mesh(resultMaterial, vertexBuffer.clone(), uvBuffer.clone(), normalBuffer.clone(), indices.clone());
+		for(int i=0; i<result.vertexData.length; i++) {
+			Vertex v = vertexData[i];
+			if (v != null) {
+				Vertex w = new Vertex();
+				w.putAll(v);
+				result.vertexData[i] = w;
+			}
+		}
+		
+		return result;
+	}
 }

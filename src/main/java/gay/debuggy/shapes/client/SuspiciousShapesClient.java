@@ -13,6 +13,8 @@ public class SuspiciousShapesClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient(ModContainer mod) {
+		Config.init(mod);
+		
 		PreparableModelLoadingPlugin.register(SuspiciousShapesModelLoadingPlugin::loadData, new SuspiciousShapesModelLoadingPlugin());
 	}
 	

@@ -60,19 +60,24 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			if (node.location().getPath().endsWith(".json")) {
 				//Create a BlockModelPlus from this json
 				try {
+					if (node.data() == null || node.data().isBlank()) {
+						processed.errors.add(new ProcessedModelData.ErrorNode(node.location(), "Node was empty before processing.", new IllegalArgumentException()));
+						continue; //let all its descendants be missingno.
+					}
+					
 					BlockModelPlus model = new GsonBuilder()
 							//These type adapters are cleaned-up copies of Mojang code since it's private
 							.registerTypeAdapter(Transformation.class, new TransformationDeserializer())
 							.registerTypeAdapter(ModelTransformation.class, new ModelTransformationDeserializer())
 							.create().fromJson(node.data(), BlockModelPlus.class);
 					
+					if (model == null) {
+						processed.errors.add(new ProcessedModelData.ErrorNode(node.location(), "Data was null after processing.", new IllegalArgumentException()));
+						continue; //Yeah let's skip this one from adding to our nodetree, let all its descendants be missingno.
+					}
+					
 					var jsonNode = new ProcessedModelData.JsonNode(node.location(), model);
 					processed.byId.put(jsonNode.id, jsonNode);
-					
-					//if (!GLTF_LOADER_KEY.toString().equals(model.loader) && !OBJ_LOADER_KEY.toString().equals(model.loader)) {
-					//	//Don't attach models if the loader key is wrong
-					//	continue;
-					//}
 					
 					/*
 					 * For now we're skipping adding any BlockModelPlus roots to the tree and just keeping them in byId.
@@ -157,18 +162,23 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 		
 		int numActualNodes = processed.roots.stream().mapToInt(ProcessedModelData.Node::treeSize).sum();
 		
-		if (processed.byId.size() != numActualNodes) {
+		if (processed.byId.size() != numActualNodes && Config.instance.log_level.value() > Config.LogLevel.NO_ERRORS.value()) {
 			SuspiciousShapesClient.LOGGER.warn("LUT has "+processed.byId.size()+" entries but node tree has "+numActualNodes+" nodes.");
 		}
 		
 		final long elapsed = (System.nanoTime() - start) / 1_000_000;
 		
-		SuspiciousShapesClient.LOGGER.info("Processed "+processed.roots.size()+" roots, "+ toReattach + " detached nodes, encountered "+processed.errors.size()+" errors, and pruned to "+numActualNodes+" actual nodes ("+elapsed+" msec).");
-		if (processed.errors.size()>0) {
-			SuspiciousShapesClient.LOGGER.error("There were "+processed.errors+" errors loading data:");
-			for(ProcessedModelData.ErrorNode err : processed.errors) {
-				
-				SuspiciousShapesClient.LOGGER.error("    "+err.id()+": "+err.message());
+		if (Config.instance.log_level.value() > Config.LogLevel.QUIET.value()) {
+			SuspiciousShapesClient.LOGGER.info("Processed "+processed.roots.size()+" roots, "+ toReattach + " detached nodes, encountered "+processed.errors.size()+" errors, and pruned to "+numActualNodes+" actual nodes ("+elapsed+" msec).");
+			
+			if (Config.instance.log_level.value() > Config.LogLevel.NO_ERRORS.value()) {
+				if (processed.errors.size()>0) {
+					SuspiciousShapesClient.LOGGER.error("There were "+processed.errors+" errors loading data:");
+					for(ProcessedModelData.ErrorNode err : processed.errors) {
+						
+						SuspiciousShapesClient.LOGGER.error("    "+err.id()+": "+err.message());
+					}
+				}
 			}
 		}
 		
@@ -202,7 +212,9 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			}
 			
 			long elapsed = (System.nanoTime() - start) / 1_000_000;
-			SuspiciousShapesClient.LOGGER.info("Acquired "+result.resources.size()+" model resources ("+elapsed+" msec).");
+			if (Config.instance.log_level.value() > Config.LogLevel.QUIET.value()) {
+				SuspiciousShapesClient.LOGGER.info("Acquired "+result.resources.size()+" model resources ("+elapsed+" msec).");
+			}
 			
 			return result;
 		}, executor);

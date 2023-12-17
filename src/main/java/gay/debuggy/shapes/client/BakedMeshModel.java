@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableList;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext.QuadTransform;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
@@ -18,7 +17,7 @@ import net.minecraft.client.texture.Sprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.random.RandomGenerator;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
 
 public class BakedMeshModel implements BakedModel, FabricBakedModel {
@@ -35,7 +34,7 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 	//implements BakedModel {
 	
 		@Override
-		public List<BakedQuad> getQuads(BlockState state, Direction face, RandomGenerator random) {
+		public List<BakedQuad> getQuads(BlockState state, Direction face, Random random) {
 			return ImmutableList.of();
 		}
 	
@@ -84,16 +83,16 @@ public class BakedMeshModel implements BakedModel, FabricBakedModel {
 		}
 	
 		@Override
-		public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<RandomGenerator> randomSupplier, RenderContext context) {
+		public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
 			for(Mesh mesh : meshes) {
-				context.meshConsumer().accept(mesh);
+				mesh.outputTo(context.getEmitter());
 			}
 		}
 	
 		@Override
-		public void emitItemQuads(ItemStack stack, Supplier<RandomGenerator> randomSupplier, RenderContext context) {
+		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
 			for(Mesh mesh : meshes) {
-				context.meshConsumer().accept(mesh);
+				mesh.outputTo(context.getEmitter());
 			}
 		}
 

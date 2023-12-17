@@ -30,15 +30,15 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.ModelHelper;
 import net.fabricmc.fabric.impl.client.indigo.renderer.IndigoRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.Baker;
 import net.minecraft.client.render.model.ModelBakeSettings;
-import net.minecraft.client.render.model.ModelBaker;
 import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.render.model.json.Transformation;
-import net.minecraft.client.resource.Material;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.TextureManager;
+import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -72,7 +72,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 	}
 	
 	@Override
-	public BakedModel bake(ModelBaker modelBaker, Function<Material, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+	public BakedModel bake(Baker modelBaker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
 		
 		sprites.clear();
 		Sprite particleSprite = null;
@@ -234,15 +234,15 @@ public class GlowUnbakedModel implements UnbakedModel {
 	}
 	
 	private static Sprite missingno = null;
-	public static Sprite resolveMissingno(Function<Material, Sprite> textureGetter) {
+	public static Sprite resolveMissingno(Function<SpriteIdentifier, Sprite> textureGetter) {
 		if (missingno == null) {
-			missingno = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, TextureManager.MISSING_IDENTIFIER));
+			missingno = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, TextureManager.MISSING_IDENTIFIER));
 		}
 		
 		return missingno;
 	}
 	
-	public static @Nullable Sprite resolveSprite(String id, Function<Material, Sprite> textureGetter) {
+	public static @Nullable Sprite resolveSprite(String id, Function<SpriteIdentifier, Sprite> textureGetter) {
 		String namespace = "minecraft";
 		String path = "";
 		
@@ -256,7 +256,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 		}
 
 		try {
-			Sprite sprite = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
+			Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
 			if (sprite == null) {
 				return resolveMissingno(textureGetter);
 			} else {
@@ -267,7 +267,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 		}
 	}
 	
-	public static @Nullable Sprite resolveSprite(String id, Function<Material, Sprite> textureGetter, Map<String, Sprite> dest) {
+	public static @Nullable Sprite resolveSprite(String id, Function<SpriteIdentifier, Sprite> textureGetter, Map<String, Sprite> dest) {
 		String namespace = "minecraft";
 		String path = "";
 		
@@ -299,7 +299,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 			}*/
 		} else {
 			try {
-				Sprite sprite = textureGetter.apply(new Material(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
+				Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
 				if (sprite == null) {
 					SuspiciousShapesClient.LOGGER.warn("Can't find texture "+new Identifier(id)+" referenced from model "+id);
 					dest.put(id, resolveMissingno(textureGetter));
@@ -331,7 +331,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 	}
 
 	@Override
-	public void resolveParents(Function<Identifier, UnbakedModel> models) {
+	public void setParents(Function<Identifier, UnbakedModel> models) {
 		// TODO: Actually resolve the parents!
 		
 	}

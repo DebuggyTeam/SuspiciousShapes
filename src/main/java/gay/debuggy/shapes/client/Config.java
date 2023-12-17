@@ -5,10 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.quiltmc.loader.api.ModContainer;
-import org.quiltmc.loader.api.QuiltLoader;
-
 import com.google.gson.GsonBuilder;
+
+import net.fabricmc.loader.api.FabricLoader;
 
 public class Config {
 	public static transient Config instance = new Config();
@@ -31,8 +30,8 @@ public class Config {
 		}
 	}
 	
-	public static Config init(ModContainer mod) {
-		Path configPath = QuiltLoader.getConfigDir().resolve(SuspiciousShapesClient.MODID+".json");
+	public static Config init() {
+		Path configPath = FabricLoader.getInstance().getConfigDir().resolve(SuspiciousShapesClient.MODID+".json");
 		
 		if (!Files.exists(configPath)) {
 			return instance;

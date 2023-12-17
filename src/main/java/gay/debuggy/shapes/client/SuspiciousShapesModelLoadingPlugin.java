@@ -192,7 +192,7 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			
 			Map<Identifier, Resource> blockModelResources = loader.findResources("models/block", (it) -> it.getPath().endsWith(".json") || it.getPath().endsWith(".gltf"));
 			for(Map.Entry<Identifier, Resource> entry : blockModelResources.entrySet()) {
-				try (InputStream in = entry.getValue().open()) {
+				try (InputStream in = entry.getValue().getInputStream()) {
 					String value = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 					result.resources.add(new UnprocessedModelData.Node(entry.getKey(), value));
 				} catch (IOException e) {
@@ -203,7 +203,7 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			
 			Map<Identifier, Resource> itemModelResources = loader.findResources("models/item", (it) -> it.getPath().endsWith(".json") || it.getPath().endsWith(".gltf"));
 			for(Map.Entry<Identifier, Resource> entry : itemModelResources.entrySet()) {
-				try (InputStream in = entry.getValue().open()) {
+				try (InputStream in = entry.getValue().getInputStream()) {
 					String value = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 					result.resources.add(new UnprocessedModelData.Node(entry.getKey(), value));
 				} catch (IOException e) {
@@ -228,7 +228,7 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 		}
 		
 		@Override
-		public @Nullable UnbakedModel resolveModel(Context context) {
+		public @Nullable UnbakedModel resolveModel(net.fabricmc.fabric.api.client.model.loading.v1.ModelResolver.Context context) {
 			ProcessedModelData.Node node = data.byId.get(context.id());
 			
 			if (node != null) {

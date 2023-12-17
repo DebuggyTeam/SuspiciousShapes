@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "suspicious_shapes",
+	"version": "${version}",
+	"name": "Suspicious Shapes",
+	"description": "glTF block models",
+	"authors": [
+		"Falkreon"
+	],
+	"contact": {
+		"homepage": "https://github.com/DebuggyTeam/SuspiciousShapes",
+		"issues": "https://github.com/DebuggyTeam/SuspiciousShapes/issues",
+		"sources": "https://github.com/DebuggyTeam/SuspiciousShapes"
+	},
+	"license": "MIT",
+	"icon": "assets/suspicious_shapes/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [ "gay.debuggy.shapes.client.SuspiciousShapesClient" ]
+	},
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}

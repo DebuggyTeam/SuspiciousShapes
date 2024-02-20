@@ -44,7 +44,7 @@ public class GLTFData {
 
 	public GLTFData() {}
 
-	private ByteBuffer getDataBuffer(int bufferView, byte[] bin) {
+	private ByteBuffer getDataBuffer(int bufferView, byte[] binaryData) {
 		if (bufferView<0 || bufferView>= bufferViews.length) throw new IllegalArgumentException("buffer argument must be between 0 and "+(bufferViews.length-1));
 		GLTFBufferView view = bufferViews[bufferView];
 		if (view.buffer<0 || view.buffer>=buffers.length) throw new IllegalStateException("bufferView points to nonexistant buffer #"+view.buffer);
@@ -65,8 +65,8 @@ public class GLTFData {
 			return ByteBuffer.wrap(data, view.byteOffset, view.byteLength).order(ByteOrder.LITTLE_ENDIAN);
 		}
 
-		if (view.buffer == 0 && bin != null) {
-			return ByteBuffer.wrap(bin, view.byteOffset, view.byteLength);
+		if (view.buffer == 0 && binaryData != null) {
+			return ByteBuffer.wrap(binaryData, view.byteOffset, view.byteLength);
 		}
 
 		throw new IllegalArgumentException("Data buffer is not backed by a data URI or binary");
@@ -82,14 +82,14 @@ public class GLTFData {
 	 */
 
 
-	public Vector3d[] getVec3Access(int accessor, byte[] bin) {
+	public Vector3d[] getVec3Access(int accessor, byte[] bindaryData) {
 		if (accessor<0 || accessor>=accessors.length) throw new IllegalArgumentException("accessor argument must be between 0 and "+(accessors.length-1));
 		if (!accessors[accessor].type.equals("VEC3")) throw new IllegalArgumentException("accessor must be a VEC3 type (is '"+accessors[accessor].type+"').");
 		int elementCount = accessors[accessor].count;
 		if (accessors[accessor].componentType == GL_FLOAT) {
 			int buffer = accessors[accessor].bufferView;
 
-			FloatBuffer floatBuffer = getDataBuffer(buffer, bin).asFloatBuffer();
+			FloatBuffer floatBuffer = getDataBuffer(buffer, bindaryData).asFloatBuffer();
 			int stride = bufferViews[accessors[accessor].bufferView].byteStride;
 			if (stride==0) stride = 12;
 
@@ -107,14 +107,14 @@ public class GLTFData {
 		}
 	}
 
-	public Vector2d[] getVec2Access(int accessor, byte[] bin) {
+	public Vector2d[] getVec2Access(int accessor, byte[] binaryData) {
 		if (accessor<0 || accessor>=accessors.length) throw new IllegalArgumentException("accessor argument must be between 0 and "+(accessors.length-1));
 		if (!accessors[accessor].type.equals("VEC2")) throw new IllegalArgumentException("accessor must be a VEC2 type (is '"+accessors[accessor].type+"').");
 		int elementCount = accessors[accessor].count;
 		if (accessors[accessor].componentType == GL_FLOAT) {
 			int buffer = accessors[accessor].bufferView;
 
-			FloatBuffer floatBuffer = getDataBuffer(buffer, bin).asFloatBuffer();
+			FloatBuffer floatBuffer = getDataBuffer(buffer, binaryData).asFloatBuffer();
 			int stride = bufferViews[accessors[accessor].bufferView].byteStride;
 			if (stride==0) stride = 8;
 
@@ -133,14 +133,14 @@ public class GLTFData {
 	}
 
 
-	public int[] getScalarAccess(int accessor, byte[] bin) {
+	public int[] getScalarAccess(int accessor, byte[] binaryData) {
 		if (accessor<0 || accessor>=accessors.length) throw new IllegalArgumentException("accessor argument must be between 0 and "+(accessors.length-1));
 		if (!accessors[accessor].type.equals("SCALAR")) throw new IllegalArgumentException("accessor must be a SCALAR type (is '"+accessors[accessor].type+"').");
 		int elementCount = accessors[accessor].count;
 		if (accessors[accessor].componentType == GL_USHORT) {
 			int buffer = accessors[accessor].bufferView;
 
-			ShortBuffer shortBuffer = getDataBuffer(buffer, bin).asShortBuffer();
+			ShortBuffer shortBuffer = getDataBuffer(buffer, binaryData).asShortBuffer();
 			int stride = bufferViews[accessors[accessor].bufferView].byteStride;
 			if (stride==0) stride = 2;
 
@@ -154,7 +154,7 @@ public class GLTFData {
 			return result;
 		} else if (accessors[accessor].componentType == GL_INT) {
 			int buffer = accessors[accessor].bufferView;
-			IntBuffer intBuffer = getDataBuffer(buffer, bin).asIntBuffer();
+			IntBuffer intBuffer = getDataBuffer(buffer, binaryData).asIntBuffer();
 			int stride = bufferViews[accessors[accessor].bufferView].byteStride;
 			if (stride==0) stride = 4;
 

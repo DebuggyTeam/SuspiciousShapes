@@ -8,6 +8,7 @@ package blue.endless.glow.model.gltf;
 
 import java.io.IOException;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import blue.endless.glow.model.Material;
@@ -19,15 +20,19 @@ import blue.endless.glow.model.Vector3d;
 import blue.endless.glow.model.gltf.impl.GLTFData;
 
 public class GLTFLoader {
+	private static final Gson GSON = new GsonBuilder()
+		//.registerTypeAdapter(ModelTransformation.class, foo)
+		.create();
+
 	public static Model loadString(String json) throws IOException {
 		return loadString(json, null);
 	}
 
-	public static Model loadString(String json, byte[] bin) throws IOException {
-		GLTFData gltfData = new GsonBuilder()
-				//.registerTypeAdapter(ModelTransformation.class, foo)
-				.create().fromJson(json, GLTFData.class);
-		//GLTFData gltfData = Jankson.builder().build().fromJson(json, GLTFData.class);
+	public static Model loadString(String json, byte[] binaryData) throws IOException {
+		return loadModel(loadRaw(json), binaryData);
+	}
+
+	public static Model loadModel(GLTFData gltfData, byte[] binaryData) throws IOException {
 
 		Model result = new Model();
 
@@ -38,10 +43,10 @@ public class GLTFLoader {
 
 		for(GLTFData.GLTFMesh mesh : gltfData.meshes) {
 			for (GLTFData.GLTFPrimitive primitive : mesh.primitives) {
-				int[] indexBuffer = gltfData.getScalarAccess(primitive.indices, bin);
-				Vector3d[] positionBuffer = gltfData.getVec3Access(primitive.attributes.POSITION, bin);
-				Vector2d[] uvBuffer = gltfData.getVec2Access(primitive.attributes.TEXCOORD_0, bin);
-				Vector3d[] normalBuffer = gltfData.getVec3Access(primitive.attributes.NORMAL, bin);
+				int[] indexBuffer = gltfData.getScalarAccess(primitive.indices, binaryData);
+				Vector3d[] positionBuffer = gltfData.getVec3Access(primitive.attributes.POSITION, binaryData);
+				Vector2d[] uvBuffer = gltfData.getVec2Access(primitive.attributes.TEXCOORD_0, binaryData);
+				Vector3d[] normalBuffer = gltfData.getVec3Access(primitive.attributes.NORMAL, binaryData);
 				//TODO: look for ColorAccess
 
 				GLTFData.GLTFMaterial gl_material = gltfData.materials[primitive.material];
@@ -70,5 +75,10 @@ public class GLTFLoader {
 		}
 
 		return result;
+	}
+
+	public static GLTFData loadRaw(String json) {
+		return GSON.fromJson(json, GLTFData.class);
+		//return Jankson.builder().build().fromJson(json, GLTFData.class);
 	}
 }

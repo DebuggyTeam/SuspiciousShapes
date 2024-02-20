@@ -7,10 +7,17 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import blue.endless.glow.model.Model;
+import blue.endless.glow.model.glb.impl.GLBData;
 import blue.endless.glow.model.gltf.GLTFLoader;
+import blue.endless.glow.model.gltf.impl.GLTFData;
 
 public class GLBLoader {
 	public static Model load(InputStream is) throws IOException {
+		GLBData data = loadRaw(is);
+		return GLTFLoader.loadModel(data.data, data.binaryData);
+	}
+
+	public static GLBData loadRaw(InputStream is) throws IOException {
 		BufferedInputStream bis = new BufferedInputStream(is);
 		DataInputStream dis = new DataInputStream(bis);
 		// readInt is big-endian
@@ -26,6 +33,7 @@ public class GLBLoader {
 		byte[] jsonBytes = new byte[jsonChunkLength];
 		dis.readFully(jsonBytes);
 		String json = new String(jsonBytes, StandardCharsets.UTF_8);
+		GLTFData data = GLTFLoader.loadRaw(json);
 
 		if (fileLength > jsonChunkLength + 12) {
 			// binary blob is included too
@@ -34,9 +42,9 @@ public class GLBLoader {
 			if (binChunkType != 0x42494E00) throw new IOException("Second chunk is not binary");
 
 			byte[] bin = new byte[binChunkLength];
-			return GLTFLoader.loadString(json, bin);
+			return new GLBData(data, bin);
 		} else {
-			return GLTFLoader.loadString(json);
+			return new GLBData(data, null);
 		}
 	}
 

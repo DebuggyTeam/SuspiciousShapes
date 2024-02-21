@@ -13,6 +13,9 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Base64;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import blue.endless.glow.model.Vector2d;
 import blue.endless.glow.model.Vector3d;
 
@@ -41,10 +44,12 @@ public class GLTFData {
 	public GLTFMaterial[] materials = new GLTFMaterial[0];
 	public GLTFTexture[] textures = new GLTFTexture[0];
 	public GLTFImage[] images = new GLTFImage[0];
+	public JsonObject extensions = null;
+	public JsonElement extras = null;
 
 	public GLTFData() {}
 
-	private ByteBuffer getDataBuffer(int bufferView, byte[] binaryData) {
+	public ByteBuffer getDataBuffer(int bufferView, byte[] binaryData) {
 		if (bufferView<0 || bufferView>= bufferViews.length) throw new IllegalArgumentException("buffer argument must be between 0 and "+(bufferViews.length-1));
 		GLTFBufferView view = bufferViews[bufferView];
 		if (view.buffer<0 || view.buffer>=buffers.length) throw new IllegalStateException("bufferView points to nonexistant buffer #"+view.buffer);
@@ -66,7 +71,7 @@ public class GLTFData {
 		}
 
 		if (view.buffer == 0 && binaryData != null) {
-			return ByteBuffer.wrap(binaryData, view.byteOffset, view.byteLength);
+			return ByteBuffer.wrap(binaryData, view.byteOffset, view.byteLength).order(ByteOrder.LITTLE_ENDIAN);
 		}
 
 		throw new IllegalArgumentException("Data buffer is not backed by a data URI or binary");
@@ -265,5 +270,7 @@ public class GLTFData {
 	public static class GLTFImage {
 		public String mimeType = "image/png";
 		public String uri = "#all";
+		public int bufferView = -1;
+		public String name = null;
 	}
 }

@@ -42,6 +42,8 @@ public class GLBLoader {
 			if (binChunkType != 0x42494E00) throw new IOException("Second chunk is not binary");
 
 			byte[] bin = new byte[binChunkLength];
+			dis.readFully(bin);
+
 			return new GLBData(data, bin);
 		} else {
 			return new GLBData(data, null);

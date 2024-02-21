@@ -191,8 +191,8 @@ public class GLTFData {
 		public boolean normalized = false;
 		public int count = 0;
 		public String type = "VOID";
-		public float[] max = new float[16];
-		public float[] min = new float[16];
+		public float[] max = {0};
+		public float[] min = {0};
 		public GLTFAccessorSparse sparse = null;
 		public String name = null;
 
@@ -346,17 +346,21 @@ public class GLTFData {
 		public int material = 0;
 		public int indices = 0; //index buffer
 		public GLTFPrimitiveAttributes attributes = new GLTFPrimitiveAttributes();
+		public GLTFPrimitiveAttributes[] targets = new GLTFPrimitiveAttributes[0];
 
 		public GLTFPrimitive() {}
 	}
 
 	/** sort of equivalent to Mesh.Vertex[] */
 	public static class GLTFPrimitiveAttributes {
-		public int POSITION = 0;
-		public int NORMAL = 0;
-		public int TEXCOORD_0 = 0;
-		public int JOINTS_0 = 0;
-		public int WEIGHTS_0 = 0;
+		public int POSITION = -1;
+		public int NORMAL = -1;
+		public int TANGENT = -1;
+		public int TEXCOORD_0 = -1;
+		public int TEXCOORD_1 = -1;
+		public int COLOR_0 = -1;
+		public int JOINTS_0 = -1;
+		public int WEIGHTS_0 = -1;
 
 		public GLTFPrimitiveAttributes() {}
 	}

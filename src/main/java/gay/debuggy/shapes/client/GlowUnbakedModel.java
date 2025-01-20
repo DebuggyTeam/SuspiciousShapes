@@ -71,8 +71,9 @@ public class GlowUnbakedModel implements UnbakedModel {
 		return ImmutableList.of();
 	}
 	
+	
 	@Override
-	public BakedModel bake(Baker modelBaker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+	public BakedModel bake(Baker modelBaker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer) {
 		
 		sprites.clear();
 		Sprite particleSprite = null;
@@ -256,7 +257,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 		}
 
 		try {
-			Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
+			Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(namespace, path)));
 			if (sprite == null) {
 				return resolveMissingno(textureGetter);
 			} else {
@@ -282,7 +283,7 @@ public class GlowUnbakedModel implements UnbakedModel {
 		
 		//Is the path an up-reference?
 		if (path.startsWith("#")) {
-			SuspiciousShapesClient.LOGGER.warn("Unresolved up-reference "+new Identifier(id)+" in model "+id);
+			SuspiciousShapesClient.LOGGER.warn("Unresolved up-reference "+Identifier.of(id)+" in model "+id);
 			dest.put(id, resolveMissingno(textureGetter));
 			/*
 			path = path.substring(1);
@@ -299,9 +300,9 @@ public class GlowUnbakedModel implements UnbakedModel {
 			}*/
 		} else {
 			try {
-				Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(namespace, path)));
+				Sprite sprite = textureGetter.apply(new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(namespace, path)));
 				if (sprite == null) {
-					SuspiciousShapesClient.LOGGER.warn("Can't find texture "+new Identifier(id)+" referenced from model "+id);
+					SuspiciousShapesClient.LOGGER.warn("Can't find texture "+Identifier.of(id)+" referenced from model "+id);
 					dest.put(id, resolveMissingno(textureGetter));
 				} else {
 					dest.put(id, sprite);

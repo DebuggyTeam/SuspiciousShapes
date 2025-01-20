@@ -45,8 +45,8 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			"builtin/entity"
 			);
 	
-	private static final Identifier GLTF_LOADER_KEY = new Identifier(SuspiciousShapesClient.MODID, "gltf");
-	private static final Identifier OBJ_LOADER_KEY = new Identifier(SuspiciousShapesClient.MODID, "obj");
+	private static final Identifier GLTF_LOADER_KEY = Identifier.of(SuspiciousShapesClient.MODID, "gltf");
+	private static final Identifier OBJ_LOADER_KEY = Identifier.of(SuspiciousShapesClient.MODID, "obj");
 	
 	@Override
 	public void onInitializeModelLoader(UnprocessedModelData data, Context pluginContext) {
@@ -94,7 +94,7 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 						}
 						
 						try {
-							ProcessedModelData.Node possibleParent = processed.byId.get(new Identifier(model.parent));
+							ProcessedModelData.Node possibleParent = processed.byId.get(Identifier.of(model.parent));
 							if (possibleParent != null) {
 								//If this is the attachment point between a model and a gltf, gate it through the model loader key
 								if (possibleParent instanceof ProcessedModelData.GltfNode) {
@@ -139,7 +139,7 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 				try {
 					String rawParentId = jsonNode.blockModelPlus.parent;
 					//if (rawParentId.endsWith(".gltf")) rawParentId = rawParentId.substring(0, ".gltf".length());
-					Identifier parentId = new Identifier(rawParentId); //For the purposes of locating in the id map
+					Identifier parentId = Identifier.of(rawParentId); //For the purposes of locating in the id map
 					
 					Node possiblyParent = processed.byId.get(parentId);
 					if (possiblyParent != null) {

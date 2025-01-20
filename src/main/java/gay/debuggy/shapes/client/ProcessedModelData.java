@@ -39,7 +39,7 @@ public class ProcessedModelData {
 			}// else if (path.endsWith(".gltf")) {
 			//	path = path.substring(0, path.length() - ".gltf".length());
 			//}
-			this.id = new Identifier(namespace, path);
+			this.id = Identifier.of(namespace, path);
 		}
 		
 		public int treeSize() {

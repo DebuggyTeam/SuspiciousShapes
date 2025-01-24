@@ -23,7 +23,6 @@ public class GLTFLoader {
 		GLTFData gltfData = new GsonBuilder()
 				//.registerTypeAdapter(ModelTransformation.class, foo)
 				.create().fromJson(json, GLTFData.class);
-		//GLTFData gltfData = Jankson.builder().build().fromJson(json, GLTFData.class);
 		
 		Model result = new Model();
 		

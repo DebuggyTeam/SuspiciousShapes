@@ -127,6 +127,13 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 				} catch (IOException ex) {
 					processed.errors.add(new ProcessedModelData.ErrorNode(node.location(), "I/O error processing gltf data.", ex));
 				}
+			} else if (node.location().getPath().endsWith(".obj")) {
+				//try {
+					//Model model = ObjLoader.loadString(node.data());
+					
+				//} catch (IOException ex) {
+				//	processed.errors.add(new ProcessedModelData.ErrorNode(node.location(), "I/O error processing obj data.", ex));
+				//}
 			}
 		}
 		
@@ -138,7 +145,6 @@ public class SuspiciousShapesModelLoadingPlugin implements PreparableModelLoadin
 			if (node instanceof ProcessedModelData.JsonNode jsonNode) {
 				try {
 					String rawParentId = jsonNode.blockModelPlus.parent;
-					//if (rawParentId.endsWith(".gltf")) rawParentId = rawParentId.substring(0, ".gltf".length());
 					Identifier parentId = Identifier.of(rawParentId); //For the purposes of locating in the id map
 					
 					Node possiblyParent = processed.byId.get(parentId);

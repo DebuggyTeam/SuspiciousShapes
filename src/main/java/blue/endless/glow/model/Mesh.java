@@ -167,8 +167,8 @@ public class Mesh {
 		return result.toString();
 	}
 	
-	public class Face implements Iterable<Vertex> {
-		protected List<Vertex> vertices = new ArrayList<>();
+	public static class Face implements Iterable<Vertex> {
+		public List<Vertex> vertices = new ArrayList<>();
 		
 		@Override
 		public Iterator<Vertex> iterator() {
